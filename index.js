@@ -3,7 +3,7 @@
 var fs = require('fs'),
     os = require('os'),
     path = require('path'),
-    execSync = require('child_process').execSync,
+    spawnSync = require('child_process').spawnSync,
     request = require('request'),
     progress = require('request-progress');
 
@@ -93,9 +93,14 @@ function downloadChromiumBinary() {
 
 function startInstallProcess(binaryPath) {
     console.log('installing chromium from "' + binaryPath + '"');
-    execSync(binaryPath);
+    var ret = spawnSync(binaryPath);
+    if (!ret.error) {
+        console.log('install successful');
+    } else {
+        console.log('install failed. Please kill all chromium instances and run this script again');
+    }
+
     fs.unlink(binaryPath);
-    console.log('install successful');
 }
 
 module.exports = function () {
