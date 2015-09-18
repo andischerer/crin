@@ -1,6 +1,6 @@
 {
   "name": "crin",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cli tool for installing the latest chromium nightly build",
   "license": "MIT",
   "repository": "andischerer/chromium-installer",
