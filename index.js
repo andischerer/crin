@@ -22,7 +22,7 @@ function getPlatformSpecificUrlPath(platform, arch) {
             platformUrlPath = systemUrlTranslation[platformIdentifier];
             resolve(platformUrlPath);
         }
-        reject(new Error('your System "' + platformIdentifier + '" is currently not supported'));
+        reject(new Error('Your System "' + platformIdentifier + '" is currently not supported'));
     });
 }
 
@@ -31,7 +31,7 @@ function getLatestRevisionNumber() {
     return new Promise(function (resolve, reject) {
         request(url, function (error, response, body) {
             if (error) {
-                reject(new Error('could not find the last chromium revision number'));
+                reject(new Error('Could not find the last chromium revision number'));
             }
             try {
                 var data = JSON.parse(body);
@@ -39,10 +39,10 @@ function getLatestRevisionNumber() {
                 if (revision > 0) {
                     resolve(revision);
                 }
-                console.log('latest chromium revision: ' + revision);
+                console.log('Latest chromium revision: ' + revision);
                 console.log();
             } catch (e) {
-                reject(new Error('revision number not found in response'));
+                reject(new Error('Revision number not found in response'));
             }
         });
     });
@@ -53,7 +53,7 @@ function downloadChromiumBinary() {
     return new Promise(function (resolve, reject) {
         request(url, function (error, response, body) {
             if (error) {
-                reject(new Error('could not find the right chromium binary file'));
+                reject(new Error('Could not find the right chromium binary file'));
             }
             try {
                 var data = JSON.parse(body);
@@ -65,26 +65,26 @@ function downloadChromiumBinary() {
 
                 var binaryDownloadPath = path.join(os.tmpdir(), 'chromium.exe');
 
-                console.log('starting chromium binary download');
+                console.log('Starting chromium binary download');
                 progress(request.get(found.mediaLink))
                     .on('progress', function (state) {
-                        console.log('download progress: ' + state.percent + '%');
+                        console.log('Download progress: ' + state.percent + '%');
                     })
                     .on('error', function () {
-                        reject(new Error('could not download chromium binary'));
+                        reject(new Error('Could not download chromium binary'));
                     })
                     .pipe(fs.createWriteStream(binaryDownloadPath))
                     .on('close', function (err) {
                         if (err) {
-                            reject(new Error('could not save chromium binary to tempfolder "' + binaryDownloadPath + '"'));
+                            reject(new Error('Could not save chromium binary to tempfolder "' + binaryDownloadPath + '"'));
                         }
-                        console.log('download successful');
+                        console.log('Download successful');
                         console.log();
                         resolve(binaryDownloadPath);
                     });
 
             } catch (e) {
-                reject(new Error('error while finding the correct binary name.'));
+                reject(new Error('Error while finding the correct binary name.'));
             }
         });
 
@@ -92,12 +92,12 @@ function downloadChromiumBinary() {
 }
 
 function startInstallProcess(binaryPath) {
-    console.log('installing chromium from "' + binaryPath + '"');
+    console.log('Installing chromium from "' + binaryPath + '"');
     var ret = spawnSync(binaryPath);
     if (!ret.error) {
-        console.log('install successful');
+        console.log('Install successful');
     } else {
-        console.log('install failed. Please kill all chromium instances and run this script again');
+        console.log('Install failed. Please kill all chromium instances and run this script again');
     }
 
     fs.unlink(binaryPath);
