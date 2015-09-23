@@ -7,8 +7,8 @@ var fs = require('fs'),
     request = require('request'),
     progress = require('request-progress');
 
-var revision = 0,
-    platformUrlPath = '';
+var platformUrlPath = '',
+    revision = 0;
 
 function getPlatformSpecificUrlPath(platform, arch) {
     var platformIdentifier = platform.toLowerCase() + arch.toLowerCase();
@@ -31,16 +31,18 @@ function getLatestRevisionNumber() {
     return new Promise(function (resolve, reject) {
         request(url, function (error, response, body) {
             if (error) {
-                reject(new Error('Could not find the last chromium revision number'));
+                reject(new Error('Could not find the lastest revision'));
             }
             try {
                 var data = JSON.parse(body);
-                revision = parseInt(data['metadata']['cr-commit-position-number'], 10) || 0;
-                if (revision > 0) {
+                var latestRevision = parseInt(data['metadata']['cr-commit-position-number'], 10) || 0;
+                if (latestRevision > 0) {
+                    revision = (revision > 0) ? revision : latestRevision;
+                    console.log('Latest revision: ' + latestRevision);
+                    console.log('Install revision: ' + revision);
+                    console.log();
                     resolve(revision);
                 }
-                console.log('Latest chromium revision: ' + revision);
-                console.log();
             } catch (e) {
                 reject(new Error('Revision number not found in response'));
             }
@@ -49,34 +51,36 @@ function getLatestRevisionNumber() {
 }
 
 function downloadChromiumBinary() {
-    var url = 'https://www.googleapis.com/storage/v1/b/chromium-browser-continuous/o?delimiter=/&prefix=' + platformUrlPath + '/' + revision + '/&fields=items(mediaLink,name,size,updated)';
+    var url = 'https://www.googleapis.com/storage/v1/b/chromium-browser-continuous/o?delimiter=/&prefix=' + platformUrlPath + '/' + revision +
+              '/&fields=items(mediaLink,name,size,updated)';
+
     return new Promise(function (resolve, reject) {
         request(url, function (error, response, body) {
             if (error) {
-                reject(new Error('Could not find the right chromium binary file'));
+                reject(new Error('Could not find the right binary'));
             }
             try {
                 var data = JSON.parse(body);
 
-                // @TODO: find correct executable binary for the given platform
+                var binaryFileName = 'mini_installer.exe';
                 var found = data.items.find(function (item) {
-                    return item.name.indexOf('mini_installer') > 0;
+                    return item.name.indexOf(binaryFileName) > 0;
                 });
 
-                var binaryDownloadPath = path.join(os.tmpdir(), 'chromium.exe');
+                var binaryDownloadPath = path.join(os.tmpdir(), binaryFileName);
 
-                console.log('Starting chromium binary download');
+                console.log('Starting binary download');
                 progress(request.get(found.mediaLink))
                     .on('progress', function (state) {
                         console.log('Download progress: ' + state.percent + '%');
                     })
                     .on('error', function () {
-                        reject(new Error('Could not download chromium binary'));
+                        reject(new Error('Could not download binary'));
                     })
                     .pipe(fs.createWriteStream(binaryDownloadPath))
                     .on('close', function (err) {
                         if (err) {
-                            reject(new Error('Could not save chromium binary to tempfolder "' + binaryDownloadPath + '"'));
+                            reject(new Error('Could not save binary to tempfolder "' + binaryDownloadPath + '"'));
                         }
                         console.log('Download successful');
                         console.log();
@@ -84,7 +88,7 @@ function downloadChromiumBinary() {
                     });
 
             } catch (e) {
-                reject(new Error('Error while finding the correct binary name.'));
+                reject(new Error('Error while finding the correct binary for revision "' + revision + '".'));
             }
         });
 
@@ -92,18 +96,19 @@ function downloadChromiumBinary() {
 }
 
 function startInstallProcess(binaryPath) {
-    console.log('Installing chromium from "' + binaryPath + '"');
+    console.log('Installing from "' + binaryPath + '"');
     var ret = spawnSync(binaryPath);
     if (!ret.error) {
-        console.log('Install successful');
+        console.log('Install process successful');
     } else {
         console.log('Install failed. Please kill all chromium instances and run this script again');
     }
-
     fs.unlink(binaryPath);
 }
 
-module.exports = function () {
+module.exports = function (specificRevision) {
+    revision = specificRevision;
+
     getPlatformSpecificUrlPath(process.platform, process.arch)
         .then(getLatestRevisionNumber)
         .then(downloadChromiumBinary)

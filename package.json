@@ -1,9 +1,9 @@
 {
   "name": "crin",
   "version": "0.0.2",
-  "description": "Cli tool for installing the latest chromium nightly build",
+  "description": "Cli tool for installing/updating chromium from nightly builds for Windows",
   "license": "MIT",
-  "repository": "andischerer/chromium-installer",
+  "repository": "andischerer/crin",
   "author": {
     "name": "Andreas Scherer",
     "email": "t3asdev@googlemail.com"
