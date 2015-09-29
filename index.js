@@ -63,9 +63,15 @@ function downloadChromiumBinary() {
                 var data = JSON.parse(body);
 
                 var binaryFileName = 'mini_installer.exe';
-                var found = data.items.find(function (item) {
-                    return item.name.indexOf(binaryFileName) > 0;
-                });
+
+                var found;
+                for (var i = 0; i < data.items.length; i++) {
+                    var item = data.items[i];
+                    if (item.name.indexOf(binaryFileName) > 0) {
+                        found = item;
+                        break;
+                    }
+                }
 
                 var binaryDownloadPath = path.join(os.tmpdir(), binaryFileName);
 
