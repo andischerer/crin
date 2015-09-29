@@ -8,6 +8,12 @@
     "name": "Andreas Scherer",
     "email": "t3asdev@googlemail.com"
   },
+  "xo": {
+    "envs": [
+      "node"
+    ],
+    "space": 4
+  },
   "bin": "cli.js",
   "preferGlobal": true,
   "engines": {
@@ -27,6 +33,7 @@
   ],
   "dependencies": {
     "meow": "^3.3.0",
+    "progress": "1.1.8",
     "request": "^2.62.0",
     "request-progress": "^0.3.1",
     "update-notifier": "^0.5.0"

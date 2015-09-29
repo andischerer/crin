@@ -6,6 +6,7 @@ var path = require('path');
 var spawnSync = require('child_process').spawnSync;
 var request = require('request');
 var progress = require('request-progress');
+var ProgressBar = require('progress');
 
 var platformUrlPath = '';
 var revision = 0;
@@ -76,9 +77,26 @@ function downloadChromiumBinary() {
                 var binaryDownloadPath = path.join(os.tmpdir(), binaryFileName);
 
                 console.log('Starting binary download');
+                var bar;
+                var lastReceivedLenght = 0;
+                var receivedDelta = 0;
                 progress(request.get(found.mediaLink))
                     .on('progress', function (state) {
-                        console.log('Download progress: ' + state.percent + '%');
+                        if (!bar) {
+                            bar = new ProgressBar('downloading [:bar] :percent :etas', {
+                                complete: '=',
+                                incomplete: ' ',
+                                width: 30,
+                                total: state.total
+                            });
+                        }
+                        if (lastReceivedLenght === 0) {
+                            receivedDelta = state.received;
+                        } else {
+                            receivedDelta = state.received - lastReceivedLenght;
+                        }
+                        bar.tick(receivedDelta);
+                        lastReceivedLenght = state.received;
                     })
                     .on('error', function () {
                         reject(new Error('Could not download binary'));
@@ -88,7 +106,8 @@ function downloadChromiumBinary() {
                         if (err) {
                             reject(new Error('Could not save binary to tempfolder "' + binaryDownloadPath + '"'));
                         }
-                        console.log('Download successful');
+                        console.log();
+                        console.log(' Download successful');
                         console.log();
                         resolve(binaryDownloadPath);
                     });
