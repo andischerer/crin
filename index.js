@@ -1,23 +1,23 @@
 'use strict';
 
-var fs = require('fs'),
-    os = require('os'),
-    path = require('path'),
-    spawnSync = require('child_process').spawnSync,
-    request = require('request'),
-    progress = require('request-progress');
+var fs = require('fs');
+var os = require('os');
+var path = require('path');
+var spawnSync = require('child_process').spawnSync;
+var request = require('request');
+var progress = require('request-progress');
 
-var platformUrlPath = '',
-    revision = 0;
+var platformUrlPath = '';
+var revision = 0;
 
 function getPlatformSpecificUrlPath(platform, arch) {
     var platformIdentifier = platform.toLowerCase() + arch.toLowerCase();
     console.log('current platform:' + platformIdentifier);
     return new Promise(function (resolve, reject) {
         var systemUrlTranslation = {
-                'win32x86': 'Win',
-                'win32x64': 'Win_x64'
-            };
+            win32x86: 'Win',
+            win32x64: 'Win_x64'
+        };
         if (systemUrlTranslation.hasOwnProperty(platformIdentifier)) {
             platformUrlPath = systemUrlTranslation[platformIdentifier];
             resolve(platformUrlPath);
@@ -35,7 +35,7 @@ function getLatestRevisionNumber() {
             }
             try {
                 var data = JSON.parse(body);
-                var latestRevision = parseInt(data['metadata']['cr-commit-position-number'], 10) || 0;
+                var latestRevision = parseInt(data.metadata['cr-commit-position-number'], 10) || 0;
                 if (latestRevision > 0) {
                     revision = (revision > 0) ? revision : latestRevision;
                     console.log('Latest revision: ' + latestRevision);
@@ -92,12 +92,10 @@ function downloadChromiumBinary() {
                         console.log();
                         resolve(binaryDownloadPath);
                     });
-
             } catch (e) {
                 reject(new Error('Error while finding the correct binary for revision "' + revision + '".'));
             }
         });
-
     });
 }
 
